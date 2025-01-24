@@ -6,22 +6,13 @@
 #include <unistd.h> // read 和 close 函数
 
 
+// 该解释器项目并不支持宏，所以无法自举自己
+// 可以测试 tutor.c
+
 // 涉及到 int 和 指针 的强转
 // 64 位机的地址是 64 位，所以如果是 64 位， 定义 int 位 64 位的 longlong int
 #if __x86_64__
 	#define int long long
-#endif
-
-// 该解释器项目并不支持宏，所以无法自举自己
-// 可以测试 tutor.c
-
-// debug 模式
-// #define DEBUG
-
-#ifdef DEBUG
-    #define PrintToken(t) printf("the token is : %lld\n",t);
-#else
-    #define PrintToken(t)
 #endif
 
 
@@ -80,49 +71,62 @@ int expr_type;
 int index_of_bp; // 当前 bp 的位置
 
 
+// debug 模式
+
+// #define TOKEN_DEBUG
+
+#ifdef TOKEN_DEBUG
+    #define PrintToken(t) printf("the token is : %s\n",getTokenName(t));
+#else
+    #define PrintToken(t)
+#endif
+
+// #define ASSEMBLE_DEBUG
+
+
 // 辅助 debug 的函数，用于校验 token
-// char* getTokenName(int token) {
-//     switch (token) {
-//         case Num: return "Num";
-//         case Fun: return "Fun";
-//         case Sys: return "Sys";
-//         case Glo: return "Glo";
-//         case Loc: return "Loc";
-//         case Id: return "Id";
-//         case Char: return "Char";
-//         case Else: return "Else";
-//         case Enum: return "Enum";
-//         case If: return "If";
-//         case Int: return "Int";
-//         case Return: return "Return";
-//         case Sizeof: return "Sizeof";
-//         case While: return "While";
-//         case Assign: return "Assign";
-//         case Cond: return "Cond";
-//         case Lor: return "Lor";
-//         case Lan: return "Lan";
-//         case Or: return "Or";
-//         case Xor: return "Xor";
-//         case And: return "And";
-//         case Eq: return "Eq";
-//         case Ne: return "Ne";
-//         case Lt: return "Lt";
-//         case Gt: return "Gt";
-//         case Le: return "Le";
-//         case Ge: return "Ge";
-//         case Shl: return "Shl";
-//         case Shr: return "Shr";
-//         case Add: return "Add";
-//         case Sub: return "Sub";
-//         case Mul: return "Mul";
-//         case Div: return "Div";
-//         case Mod: return "Mod";
-//         case Inc: return "Inc";
-//         case Dec: return "Dec";
-//         case Brak: return "Brak";
-//         default: return NULL; // 无效的token值
-//     }
-// }
+char* getTokenName(int token) {
+    switch (token) {
+        case Num: return "Num";
+        case Fun: return "Fun";
+        case Sys: return "Sys";
+        case Glo: return "Glo";
+        case Loc: return "Loc";
+        case Id: return "Id";
+        case Char: return "Char";
+        case Else: return "Else";
+        case Enum: return "Enum";
+        case If: return "If";
+        case Int: return "Int";
+        case Return: return "Return";
+        case Sizeof: return "Sizeof";
+        case While: return "While";
+        case Assign: return "Assign";
+        case Cond: return "Cond";
+        case Lor: return "Lor";
+        case Lan: return "Lan";
+        case Or: return "Or";
+        case Xor: return "Xor";
+        case And: return "And";
+        case Eq: return "Eq";
+        case Ne: return "Ne";
+        case Lt: return "Lt";
+        case Gt: return "Gt";
+        case Le: return "Le";
+        case Ge: return "Ge";
+        case Shl: return "Shl";
+        case Shr: return "Shr";
+        case Add: return "Add";
+        case Sub: return "Sub";
+        case Mul: return "Mul";
+        case Div: return "Div";
+        case Mod: return "Mod";
+        case Inc: return "Inc";
+        case Dec: return "Dec";
+        case Brak: return "Brak";
+        default: return NULL; // 无效的token值
+    }
+}
 
 
 // 词法分析器
@@ -141,7 +145,23 @@ void next(){
         // parse token
 
         // 换行符
-        if(token == '\n'){    
+        if (token == '\n') {
+
+            // 根据代码逐行打印汇编
+            #ifdef ASSEMBLE_DEBUG
+                printf("%lld: %.*s", line, src-old_src, old_src);
+                old_src = src;
+
+                while (old_text < text) {
+                    printf("%8.4s", & "LEA ,IMM ,JMP ,CALL,JZ  ,JNZ ,ENT ,ADJ ,LEV ,LI  ,LC  ,SI  ,SC  ,PUSH,"
+                                      "OR  ,XOR ,AND ,EQ  ,NE  ,LT  ,GT  ,LE  ,GE  ,SHL ,SHR ,ADD ,SUB ,MUL ,DIV ,MOD ,"
+                                      "OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT"[*++old_text * 5]);
+                    if (*old_text <= ADJ)
+                        printf(" %lld\n", *++old_text);
+                    else
+                        printf("\n");
+                }
+            #endif
             ++line;
         }
         // 宏,不支持,直接跳过
@@ -372,7 +392,7 @@ void match(int tk){
         next();
     }else{
         printf("%lld: expectd token :%lld \n",line,tk);
-        printf("nihao\n");
+        // printf("nihao\n");
         exit(-1);
     }
 }
@@ -549,7 +569,7 @@ void expression(int level) {
                 // normal parenthesis
                 expression(Assign);
 
-                printf("hello \n");
+               // printf("hello \n");
                 
                 match(')');
             }
@@ -1495,7 +1515,7 @@ int main(int argc, char ** argv){
     next();
     idmain = current_id; 
 
-    #ifdef DEBUG
+    #ifdef TOKEN_DEBUG
     // 内置 identifier 设置完毕
         printf("\nBuilt-in identifier setup complete \n\n");
     #endif
@@ -1516,9 +1536,8 @@ int main(int argc, char ** argv){
 
     program();  // 开始分析
 
-
-
-    #ifdef DEBUG
+    
+    #ifdef TOKEN_DEBUG
         printf("\nparse token done\n\n");
     #endif
 
