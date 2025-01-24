@@ -9,7 +9,7 @@
         "type": "cppdbg",
         "request": "launch",
         "program": "/home/zero/c/interpreter/a.out",
-        "args": [],
+        "args": ["tutor.c", "demo.c"],
         "stopAtEntry": false,
         "cwd": "${fileDirname}",
         "environment": [],

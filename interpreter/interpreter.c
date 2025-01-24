@@ -12,6 +12,9 @@
 	#define int long long
 #endif
 
+// 该解释器项目并不支持宏，所以无法自举自己
+// 可以测试 tutor.c
+
 // debug 模式
 // #define DEBUG
 
@@ -77,6 +80,51 @@ int expr_type;
 int index_of_bp; // 当前 bp 的位置
 
 
+// 辅助 debug 的函数，用于校验 token
+// char* getTokenName(int token) {
+//     switch (token) {
+//         case Num: return "Num";
+//         case Fun: return "Fun";
+//         case Sys: return "Sys";
+//         case Glo: return "Glo";
+//         case Loc: return "Loc";
+//         case Id: return "Id";
+//         case Char: return "Char";
+//         case Else: return "Else";
+//         case Enum: return "Enum";
+//         case If: return "If";
+//         case Int: return "Int";
+//         case Return: return "Return";
+//         case Sizeof: return "Sizeof";
+//         case While: return "While";
+//         case Assign: return "Assign";
+//         case Cond: return "Cond";
+//         case Lor: return "Lor";
+//         case Lan: return "Lan";
+//         case Or: return "Or";
+//         case Xor: return "Xor";
+//         case And: return "And";
+//         case Eq: return "Eq";
+//         case Ne: return "Ne";
+//         case Lt: return "Lt";
+//         case Gt: return "Gt";
+//         case Le: return "Le";
+//         case Ge: return "Ge";
+//         case Shl: return "Shl";
+//         case Shr: return "Shr";
+//         case Add: return "Add";
+//         case Sub: return "Sub";
+//         case Mul: return "Mul";
+//         case Div: return "Div";
+//         case Mod: return "Mod";
+//         case Inc: return "Inc";
+//         case Dec: return "Dec";
+//         case Brak: return "Brak";
+//         default: return NULL; // 无效的token值
+//     }
+// }
+
+
 // 词法分析器
 // 调用一次就读取源代码将下一个需要解析的 token 写入 token 字段
 void next(){
@@ -85,7 +133,7 @@ void next(){
     
     // 遍历源代码，逐个找到需要处理的 标识符
 
-    while(token = *src){ // 判断 token 的 ascii 码是否为 0， \0 对应 ascii 为 0，表示777777777777777777777777777777777777777结束
+    while(token = *src){ // 判断 token 的 ascii 码是否为 0， \0 对应 ascii 为 0，表示结束
         // 全是 if ，跳过 空格
         
         ++src; // src 是 token 的前一位
@@ -130,7 +178,6 @@ void next(){
             current_id[Name] = (int)last_pos;
             current_id[Hash] = hash;
             token = current_id[Token] = Id;
-
 
             // 找到新的 Id 标识符，退出next函数
             break;
@@ -290,6 +337,7 @@ void next(){
             }else{
                 token = And;
             }
+            break;
         }else if(token == '^'){
             token = Xor;
             break;
@@ -324,6 +372,7 @@ void match(int tk){
         next();
     }else{
         printf("%lld: expectd token :%lld \n",line,tk);
+        printf("nihao\n");
         exit(-1);
     }
 }
@@ -499,6 +548,9 @@ void expression(int level) {
             } else {
                 // normal parenthesis
                 expression(Assign);
+
+                printf("hello \n");
+                
                 match(')');
             }
         }
